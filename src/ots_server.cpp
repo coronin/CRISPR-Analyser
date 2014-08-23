@@ -320,7 +320,7 @@ protected:
 int usage() {
     fprintf(stderr, "\n");
     fprintf(stderr, "Program: ots_server\n");
-    fprintf(stderr, "Contact: Alex Hodgkins <ah19@sanger.ac.uk>\n");
+    fprintf(stderr, "Contact: Alex Hodgkins <ah19@sanger.ac.uk>, Liang Cai\n");
     fprintf(stderr, "Description: A server version of the crispr_analyser that responds to JSON requests\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Usage: ots_server [options]\n");
@@ -329,7 +329,8 @@ int usage() {
     fprintf(stderr, "         -p INT     The port to run the server on\n");
     fprintf(stderr, "         -l FILE    The file containing the human CRISPR index\n");
     fprintf(stderr, "         -m FILE    The file containing the mouse CRISPR index\n");
-    fprintf(stderr, "         -s         Load the default mouse/crispr indexes (sanger only)\n");
+    fprintf(stderr, "         -g FILE    The file containing the dog CRISPR index\n");
+    fprintf(stderr, "         -s         Load the default mouse/crispr indexes (fb.actin only)\n");
     fprintf(stderr, "         -d         Daemon mode\n");
     fprintf(stderr, "\n");
 
@@ -342,7 +343,7 @@ int main(int argc, char * argv[]) {
 
     bool default_opts = false;
     bool daemon = false;
-    string human_index, mouse_index;
+    string human_index, mouse_index, dog_index;
     int c = -1;
     while ( (c = getopt(argc, argv, "t:p:l:m:sd")) != -1 ) {
         switch ( c ) {
@@ -350,6 +351,7 @@ int main(int argc, char * argv[]) {
             case 'p': port         = optarg; break;
             case 'l': human_index  = optarg; break;
             case 'm': mouse_index  = optarg; break;
+            case 'g': dog_index  = optarg; break;
             case 's': default_opts = true; break;
             case 'd': daemon       = true; break;
             case '?': return usage();
@@ -357,12 +359,13 @@ int main(int argc, char * argv[]) {
     }
 
     if ( default_opts ) {
-        human_index = "/lustre/scratch109/sanger/team87/crispr_indexes/GRCh37_index.bin";
-        mouse_index = "/lustre/scratch109/sanger/team87/crispr_indexes/GRCm38_index.bin";
+        human_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_human.bin";
+        mouse_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_mouse.bin";
+        dog_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_cf3.bin";
     }
     else { 
         if ( human_index.empty() && mouse_index.empty() ) {
-            cerr << "You must specify at least 1 index to load, or use -s to use the default indexes in /lustre" << endl;
+            cerr << "You must specify at least 1 index to load, or use -s to use the default indexes" << endl;
             return usage();
         }
     }
@@ -397,6 +400,7 @@ int main(int argc, char * argv[]) {
 
     if ( ! human_index.empty() ) server.load_index("human", human_index);
     if ( ! mouse_index.empty() ) server.load_index("mouse", mouse_index);
+    if ( ! dog_index.empty() ) server.load_index("dog", dog_index);
 
     server.setOption("document_root", "html");
     server.setOption("listening_ports", port);
