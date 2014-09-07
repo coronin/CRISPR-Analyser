@@ -193,6 +193,8 @@ protected:
         response.setConnectionAlive(false);
         response.setCacheDisabled();
         response.setContentType(content_type);
+        response.setHeaderValue("Access-Control-Allow-Origin", "*");
+        response.setHeaderValue("Cache-Control", "no-cache, must-revalidate");
         response.addContent(result);
         response.write();
     }
@@ -345,7 +347,7 @@ int main(int argc, char * argv[]) {
     bool daemon = false;
     string human_index, mouse_index, dog_index;
     int c = -1;
-    while ( (c = getopt(argc, argv, "t:p:l:m:sd")) != -1 ) {
+    while ( (c = getopt(argc, argv, "t:p:l:m:g:sd")) != -1 ) {
         switch ( c ) {
             case 't': num_threads  = optarg; break;
             case 'p': port         = optarg; break;
@@ -364,7 +366,7 @@ int main(int argc, char * argv[]) {
         dog_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_cf3.bin";
     }
     else { 
-        if ( human_index.empty() && mouse_index.empty() ) {
+        if ( human_index.empty() && mouse_index.empty() && dog_index.empty() ) {
             cerr << "You must specify at least 1 index to load, or use -s to use the default indexes" << endl;
             return usage();
         }
