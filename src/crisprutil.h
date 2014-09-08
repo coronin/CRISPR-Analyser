@@ -55,6 +55,7 @@ class CrisprUtil {
         uint8_t cmap[256];
         void load_binary(const std::string & outfile);
         std::string get_crispr(uint64_t id);
+        std::string get_offset_crispr(uint64_t id);
         uint64_t get_crispr_int(uint64_t id);
         uint64_t num_seqs();
         uint64_t seq_length();

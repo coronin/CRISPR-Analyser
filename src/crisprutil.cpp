@@ -44,6 +44,10 @@ void CrisprUtil::_populate_cmap() {
 string CrisprUtil::get_crispr(uint64_t id) {
     return util::bits_to_string( get_crispr_int(id), crispr_data.seq_length );
 }
+// 2014-9-9 : id with offset need to be correct
+string CrisprUtil::get_offset_crispr(uint64_t id) {
+    return util::bits_to_string( get_crispr_int(id - crispr_data.offset), crispr_data.seq_length );
+}
 
 uint64_t CrisprUtil::get_crispr_int(uint64_t id) {
     //make sure load_binary has been called

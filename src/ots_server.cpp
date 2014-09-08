@@ -146,6 +146,10 @@ protected:
                         result = search_json(request);
                         res = true;
                     }
+                    else if ( uri == string("/api/id") ) {
+                        result = id_json(request);
+                        res = true;
+                    }
                     else if ( uri == string("/api/off_targets") ) {
                         result = find_off_targets(request);
                         res = true;
@@ -260,6 +264,28 @@ protected:
         get_matches(request, matches);
 
         return util::to_json_array(matches);
+    }
+
+    const string id_json(const MongooseRequest& request) {
+        vector<string> seqs;
+        string ids_text;
+        request.getVar("ids", ids_text);
+        string species;
+        request.getVar("species", species);
+
+        if ( ids_text.empty() )
+            throw runtime_error("Please provide ids");
+        if ( species.empty() )
+            throw runtime_error("Please provide a species");
+
+        util::lc(species);
+        vector<string> ids = util::split(ids_text);
+
+        for ( uint64_t i = 0; i < ids.size(); i++ ) {
+            seqs.push_back( "'" + get_util(species)->get_offset_crispr( stoull(ids[i]) ) + "'" );
+        }
+
+        return util::to_json_array(seqs);
     }
 
     const string find_off_targets(const MongooseRequest& request) {
