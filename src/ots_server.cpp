@@ -387,9 +387,9 @@ int main(int argc, char * argv[]) {
     }
 
     if ( default_opts ) {
-        human_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_human.bin";
-        mouse_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_mouse.bin";
-        dog_index = "/home/liang/htgt-crispr/CRISPR-Analyser/crisprs_cf3.bin";
+        human_index = "/home/liang/htgt-crispr/CRISPR-Analyser/NAGNGG_hg38_crisprs.bin";
+        mouse_index = "/home/liang/htgt-crispr/CRISPR-Analyser/NAGNGG_mm10_crisprs.bin";
+        dog_index = "/home/liang/htgt-crispr/CRISPR-Analyser/NAGNGG_cf3_crisprs.bin";
     }
     else { 
         if ( human_index.empty() && mouse_index.empty() && dog_index.empty() ) {
