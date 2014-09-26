@@ -48,9 +48,16 @@ INHERITS (crisprs);
 You will also want some indexes/constraints:
 
 ```sql
-ALTER TABLE ONLY crisprs_human ADD CONSTRAINT crisprs_mouse_unique_loci UNIQUE (chr_start, chr_name, pam_right);
+ALTER TABLE ONLY crisprs_mouse ADD CONSTRAINT crisprs_mouse_unique_loci UNIQUE (chr_start, chr_name, pam_right);
 CREATE INDEX idx_crisprs_mouse_loci ON crisprs_mouse USING btree (chr_name, chr_start);
 ```
+
+If you are using inheritance each timeyou add a new species crispr table you need to add a primary key:
+```sql
+alter table crisprs_dog add constraint crisprs_dog_pkey primary key (id);
+```
+
+Or finding a CRISPR by ID will run incredibly slowly.
 
 You can see how to populate this table in the next section
 
@@ -77,7 +84,7 @@ For now you will have to get this script
 Compile it with:
 
 ```
-g++ -std=c++0x -O3 -W -Wall get_all_crisprs.cpp
+g++ -std=c++0x -O3 -W -Wall -o get_all_crisprs get_all_crisprs.cpp
 ```
 
 Then run:
