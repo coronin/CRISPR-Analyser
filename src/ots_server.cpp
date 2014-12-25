@@ -45,6 +45,7 @@
 #include <signal.h>
 #include <stdexcept>
 #include <unistd.h>
+#include <cstdio>
 
 #include "mongcpp.h"
 #include "crisprutil.h"
@@ -58,7 +59,7 @@ using namespace std;
 int done = 0;
 
 void sig_handler(int sig) {
-    cerr << "Received signal " << util::to_string(sig) << ", exiting" << endl;
+    cerr << "Received signal " << to_string(sig) << ", exiting" << endl;
     done = 1;
 }
 
@@ -158,6 +159,10 @@ protected:
                         result = find_off_targets(request);
                         res = true;
                     }
+                    else if ( uri == string("/api/off_targets_by_seq") ) {
+                        result = off_targets_by_seq(request);
+                        res = true;
+                    }
                     else {
                         cerr << "Couldn't find api URI " << uri << endl;
                     }
@@ -253,10 +258,10 @@ protected:
         get_matches(request, matches);
 
         //result += "<br />Seq is: " + seq;
-        result += "<br />Found " + util::to_string(matches.size()) + " matches:";
+        result += "<br />Found " + to_string(matches.size()) + " matches:";
 
         for ( uint i = 0; i < matches.size(); i++ ) {
-            result += "<br />" + util::to_string(matches[i]);
+            result += "<br />" + to_string(matches[i]);
         }
 
 
@@ -270,23 +275,54 @@ protected:
         return util::to_json_array(matches);
     }
 
+    const string off_targets_by_seq(const MongooseRequest& request) {
+        string result;
+        string sequence;
+        string species;
+        string pam_right_param;
+        vector<uint64_t> matches;
+        bool pam_right;
+        string jason_result;
+
+        request.getVar("seq", sequence);
+        request.getVar("species", species);
+        request.getVar("pam_right", pam_right_param);
+
+        pam_right = false;
+        if ( pam_right_param == "true" ) {
+            pam_right = true;
+        }
+        else if ( pam_right_param == "false" ) {
+            pam_right = false;
+        }
+        else {
+             throw runtime_error("pam_right must be the string true or false");
+        }
+
+        result = get_util(species)->off_targets_by_seq( sequence, pam_right);
+        jason_result = "{ \"data\": \"" + result + "\" }";
+
+        return jason_result;
+    }
+
     const string id_json(const MongooseRequest& request) {
         vector<string> seqs;
-        string ids_text;
+        string ids_text, species;
         request.getVar("ids", ids_text);
-        string species;
         request.getVar("species", species);
 
         if ( ids_text.empty() )
-            throw runtime_error("Please provide ids");
+            throw runtime_error("Please provide ids as a comma separated string");
         if ( species.empty() )
             throw runtime_error("Please provide a species");
 
         util::lc(species);
         vector<string> ids = util::split(ids_text);
 
-        for ( uint64_t i = 0; i < ids.size(); i++ ) {
-            seqs.push_back( "'" + get_util(species)->get_offset_crispr( stoull(ids[i]) ) + "'" );
+        //should maybe change this to return an object of { id: sequence }
+        for ( vector<string>::size_type i = 0; i < ids.size(); i++ ) {
+            cerr << "Getting sequence for " << ids[i] << " (" << species << ")\n";
+            seqs.push_back( "'" + get_util(species)->get_crispr( stoull(ids[i]) ) + "'" );
         }
 
         return util::to_json_array(seqs);
@@ -311,7 +347,7 @@ protected:
 
         vector<string> ids = util::split(ids_text);
 
-        for ( uint64_t i = 0; i < ids.size(); i++ ) {
+        for ( vector<string>::size_type i = 0; i < ids.size(); i++ ) {
             ids_all.push_back( stoull(ids[i]) );
         }
 
@@ -319,12 +355,13 @@ protected:
 
         for ( uint i = 0; i < offs.size(); ++i ) {
             if ( i > 0 ) result += ",";
-            result += "\"" + util::to_string(offs[i].id) + "\":" + util::to_string(offs[i]);
+            //we use my to_string here as its a struct we want a string of
+            result += "\"" + to_string(offs[i].id) + "\":" + util::to_string(offs[i]);
         }
 
         result += "}";
 
-        //result = "Got data for " + util::to_string(offs.size()) + " crisprs";
+        //result = "Got data for " + to_string(offs.size()) + " crisprs";
 
         return result;
     }
